@@ -27,19 +27,25 @@ function draw() {
   for(let i=0; i<200; i++){
     push()
 
-    if(millis()<=5000){
+    if(millis()<=20000){
+      if(millis()<=10000){
       wave.first(i);
     }
 
-    else if(millis()>5000 && millis()<=10000){
-      // transitionTime = millis() -5000;
+    if(millis()<=15000){
       wave.second(i, getTransition());
     }
 
-    else if(millis()>10000){
-      // transitionTime = millis() -10000;
-      wave.third(i, getTransition());
+      if(millis()>=10000){
+        // transitionTime = millis() -5000;
+        wave.third(i, getTransition());
+      }
     }
+
+    // if(millis()>10000){
+    //   // transitionTime = millis() -10000;
+    //   wave.third(i, getTransition());
+    // }
 
     pop();
   }
@@ -48,8 +54,10 @@ function draw() {
 
 function getTransition() {
   let progress = millis()-startTime;
+  console.log('progress=', progress);
   let transition = (map(progress,0,10000,0,1));
-  console.log(transition);
+  console.log('transition=', transition);
+
   return constrain(transition, 0, 1);
 }
 
