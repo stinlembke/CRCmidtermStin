@@ -3,6 +3,7 @@
       //mayb dont try to manipulate dom while workin w canvas
 
 let startTime;
+let count=1;
 
 function setup() {
  createCanvas(windowWidth, windowHeight);
@@ -26,21 +27,28 @@ function draw() {
   //for loop for waves
   for(let i=0; i<200; i++){
     push()
+    count =1;
+    wave.first(i, getTransition());
+    wave.second(i, getTransition(), count);
 
-    if(millis()<=20000){
-      if(millis()<=10000){
-      wave.first(i);
+    if(millise()>=10000){
+      count=2;
     }
 
-    if(millis()<=15000){
-      wave.second(i, getTransition());
-    }
+    // if(millis()<=20000){
+    //   if(millis()<=10000){
+    //   wave.first(i, getTransition());
+    // }
 
-      if(millis()>=10000){
-        // transitionTime = millis() -5000;
-        wave.third(i, getTransition());
-      }
-    }
+    // if(millis()<=15000){
+    //   wave.second(i, getTransition());
+    // }
+
+      // if(millis()>=10000){
+      //   // transitionTime = millis() -5000;
+      //   wave.third(i, getTransition());
+      // }
+    // }
 
     // if(millis()>10000){
     //   // transitionTime = millis() -10000;
@@ -64,38 +72,50 @@ function getTransition() {
 class SinWave {
   constructor(){
     // this.transition = map(this.transitionTime, 0, 5000, 0, 1);
+   
   }
 
-  first(i){
-    let rotation1 = sin(frameCount+i)*100;
-    let size1 = 500-i*3;
-    let color1 = color(150, 100, 200);
+  first(i, transition){
+    let rotation1 = lerp(sin(frameCount+i)*100, sin(frameCount+i*3)*75, transition);
+    let size1 = lerp(500-i*3, 500-i*2, transition);
+    let color1 = lerpColor(color(150, 100, 200), color(230, 70, 150), transition);
 
     stroke(color1);
     rotate(rotation1);
     rect(0, 0, size1, size1, 200-i);
   }
 
-  second(i, transition){
+  second(i, transition, count){
 
     let rotation2 = lerp(sin(frameCount +i) * 100, sin(frameCount +i/2) * 120, transition);
     let size2 = lerp(500 - i * 3, 500 - i * 5, transition);
     let color2 = lerpColor(color(150, 100, 200), color(100, 200, 250), transition);
 
-    stroke(color2);
-    rotate(rotation2);
-    rect(0, 0, size2, size2, 200 - i);
+    if(count==1){ //setting progression for animation
+      stroke(color2);
+      rotate(rotation2);
+      rect(0, 0, size2, size2, 200 - i);
+
+    } else if (count==2){ //making this one into a rose too
+      let rotationRose = lerp(rotation2, sin(frameCount+i*3)*75, transition);
+      let sizeRose = lerp(size2, 500-i*2, transition);
+      let colorRose = lerpColor(color2, color(230, 70, 150), transition );
+
+      stroke(colorRose);
+      rotate(rotationRose);
+      rect(0, 0, sizeRose, sizeRose, 200 - i);
+    }
   }
 
-  third(i, transition){
-    // let transition = this.getTransition();
+  // third(i, transition){
+  //   // let transition = this.getTransition();
 
-    let rotation3 = lerp(sin(frameCount +i/2) *120, sin(frameCount+i*3)*75, transition );
-    let size3 = lerp(500 - i * 5, 500-i*2, transition );
-    let color3 = lerpColor(color(100, 200, 250), color(230, 70, 150), transition );
+  //   let rotation3 = lerp(sin(frameCount +i/2) *120, sin(frameCount+i*3)*75, transition );
+  //   let size3 = lerp(500 - i * 5, 500-i*2, transition );
+  //   let color3 = lerpColor(color(100, 200, 250), color(230, 70, 150), transition );
 
-    stroke(color3);
-    rotate(rotation3);
-    rect(0, 0, size3, size3, 200 - i);
-  }
+  //   stroke(color3);
+  //   rotate(rotation3);
+  //   rect(0, 0, size3, size3, 200 - i);
+  // }
 }
