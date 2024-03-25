@@ -1,121 +1,85 @@
-
 // const div1 = document.getElementById('div1');
-      //mayb dont try to manipulate dom while workin w canvas
+//mayb dont try to manipulate dom while workin w canvas
 
 let startTime;
-let count=1;
+
+const waveCount = 200;
 
 function setup() {
- createCanvas(windowWidth, windowHeight);
+  createCanvas(windowWidth, windowHeight);
 
- angleMode(DEGREES); 
- rectMode(CENTER);
+  angleMode(DEGREES);
+  rectMode(CENTER);
 
- wave = new SinWave();
- startTime = millis();
+}
+
+let amGoingUp = true;
+
+let amFlipping = false;
+
+function drawWave(i, transition) {
+  const rotation = lerp(
+    sin(frameCount + i) * 100,
+    sin(frameCount + i * 3) * 75,
+    transition
+  );
+  const myColor = lerpColor(
+    color(150, 100, 200),
+    color(230, 70, 150),
+    transition
+    );
+    
+  const size = lerp(500 - i * 3, 500 - i * 2, transition);
+
+  rotate(rotation);
+  stroke(myColor);
+  rect(0, 0, size, size, 200 - i);
 }
 
 function draw() {
-  background(15,50,80);
+  background(15, 50, 80);
   noFill();
-  translate(width/2, height/2);
+  translate(width / 2, height / 2);
 
-  //transitions over 1000 ms
-  // let transitionTime = millis();
-  // let transition = map(transitionTime, 0, 5000, 0, 1);
+  const transition = getTransition();
+  if (amFlipping === false && transition === 1) {
+    console.log(`Flipping amGoingUp to ${!amGoingUp}`);
+    amGoingUp = !amGoingUp;
+    amFlipping = true;
+  } else if (transition === 0) {
+    amFlipping = false
+  }
 
-  //for loop for waves
-  for(let i=0; i<200; i++){
-    push()
-    count =1;
-    wave.first(i, getTransition());
-    wave.second(i, getTransition(), count);
+  let animationPercentage = transition;
+  // This fixes it for goin up, but not for going down
+  if (!amGoingUp) {
+    animationPercentage = 1 - transition;
+  } 
 
-    if(millise()>=10000){
-      count=2;
-    }
+  // Stop it from flickering in the moment of transition
+  if (animationPercentage === 0 && !amGoingUp) {
+    animationPercentage = 0.99;
+  } else if (animationPercentage === 1 && amGoingUp) {
+    animationPercentage = 0.01;
+  }
 
-    // if(millis()<=20000){
-    //   if(millis()<=10000){
-    //   wave.first(i, getTransition());
-    // }
+  console.log({transition, animationPercentage, amFlipping, amGoingUp})
 
-    // if(millis()<=15000){
-    //   wave.second(i, getTransition());
-    // }
-
-      // if(millis()>=10000){
-      //   // transitionTime = millis() -5000;
-      //   wave.third(i, getTransition());
-      // }
-    // }
-
-    // if(millis()>10000){
-    //   // transitionTime = millis() -10000;
-    //   wave.third(i, getTransition());
-    // }
-
+  for (let i = 0; i < waveCount; i++) {
+    push();
+    drawWave(i, animationPercentage);
     pop();
   }
-
 }
 
+// This returns a 0-1 value that represents the fractions of a second
 function getTransition() {
-  let progress = millis()-startTime;
-  console.log('progress=', progress);
-  let transition = (map(progress,0,10000,0,1));
-  console.log('transition=', transition);
-
-  return constrain(transition, 0, 1);
-}
-
-class SinWave {
-  constructor(){
-    // this.transition = map(this.transitionTime, 0, 5000, 0, 1);
-   
-  }
-
-  first(i, transition){
-    let rotation1 = lerp(sin(frameCount+i)*100, sin(frameCount+i*3)*75, transition);
-    let size1 = lerp(500-i*3, 500-i*2, transition);
-    let color1 = lerpColor(color(150, 100, 200), color(230, 70, 150), transition);
-
-    stroke(color1);
-    rotate(rotation1);
-    rect(0, 0, size1, size1, 200-i);
-  }
-
-  second(i, transition, count){
-
-    let rotation2 = lerp(sin(frameCount +i) * 100, sin(frameCount +i/2) * 120, transition);
-    let size2 = lerp(500 - i * 3, 500 - i * 5, transition);
-    let color2 = lerpColor(color(150, 100, 200), color(100, 200, 250), transition);
-
-    if(count==1){ //setting progression for animation
-      stroke(color2);
-      rotate(rotation2);
-      rect(0, 0, size2, size2, 200 - i);
-
-    } else if (count==2){ //making this one into a rose too
-      let rotationRose = lerp(rotation2, sin(frameCount+i*3)*75, transition);
-      let sizeRose = lerp(size2, 500-i*2, transition);
-      let colorRose = lerpColor(color2, color(230, 70, 150), transition );
-
-      stroke(colorRose);
-      rotate(rotationRose);
-      rect(0, 0, sizeRose, sizeRose, 200 - i);
-    }
-  }
-
-  // third(i, transition){
-  //   // let transition = this.getTransition();
-
-  //   let rotation3 = lerp(sin(frameCount +i/2) *120, sin(frameCount+i*3)*75, transition );
-  //   let size3 = lerp(500 - i * 5, 500-i*2, transition );
-  //   let color3 = lerpColor(color(100, 200, 250), color(230, 70, 150), transition );
-
-  //   stroke(color3);
-  //   rotate(rotation3);
-  //   rect(0, 0, size3, size3, 200 - i);
-  // }
+  // I need to round 0.9974534543 not just to 1, but to 0.99
+  return (Math.round(((millis() / 10_000) % 1) * 100) / 100);
+  // 0.44123983128329
+  // 44.923812381283128
+  // 45 / 100
+  // 0.45
+  // 2.45 % 1 -> .45
+  // 0.1, 0.2, 0.3, ...0.9, 0, 0.1, 0.2, ... 0.9, 0,
 }
